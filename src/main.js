@@ -1,4 +1,4 @@
-import './style.css';
+import '/style.css';
 import { buildElement } from './builder.js';
 import { buildSubmit, buildTextField } from './components.js';
 
@@ -25,7 +25,7 @@ function zeroGoal(id) {
 function appendGoal(name, target) {
   const goals = JSON.parse(localStorage.getItem('goals')) || [];
   localStorage.setItem('goals', JSON.stringify([...goals, {
-    'id': crypto.randomUUID,
+    'id': crypto.randomUUID(),
     'name': name,
     'count': 0,
     'target': target
