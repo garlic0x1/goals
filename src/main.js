@@ -1,4 +1,3 @@
-import '/css/style.css';
 import { buildElement } from './builder.js';
 import { buildSubmit, buildTextField } from './components.js';
 
