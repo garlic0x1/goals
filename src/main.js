@@ -81,20 +81,19 @@ function buildGoals() {
 
 function goalForm() {
   const mount = document.querySelector('#goal-form');
+  const killForm = () => mount.innerHTML = "";
   const form = buildElement('form')
 	.withClasses(['modal'])
 	.withChildren([
 	  buildTextField('text', 'name'),
 	  buildTextField('number', 'target'),
-	  buildSubmit()
+	  buildSubmit(),
+    buildElement('button')
+      .withText('Cancel')
+      .withEventListener('click', killForm)
+      .build()
 	])
-	.withEventListener('submit', e => {
-	  console.log('submitting');
-	  const name = e.target[0].value;
-	  const target = e.target[1].value;
-	  console.log(name, target);
-	  appendGoal(e.target[0].value, e.target[1].value);
-	})
+	.withEventListener('submit', e => appendGoal(e.target[0].value, e.target[1].value))
 	.build();
   mount.appendChild(form);
 }

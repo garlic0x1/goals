@@ -8,6 +8,6 @@
     }
   ],
   "start_url": "/",
-  "display": "browser",
+  "display": "fullscreen",
   "prefer_related_application": false
 }
