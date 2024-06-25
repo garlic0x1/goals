@@ -1,4 +1,4 @@
-import '/style.css';
+import '/css/style.css';
 import { buildElement } from './builder.js';
 import { buildSubmit, buildTextField } from './components.js';
 
@@ -42,7 +42,14 @@ function clearGoals() {
 //------------//
 
 function buildGoal({ id, name, count, target }) {
+  const goalStyles = () => {
+    if (count < target) return ['circle', 'red'];
+    if (count < target * 1.5) return ['circle', 'green'];
+    return ['circle', 'gold'];
+  }
+
   return buildElement('div')
+    .withClass('goal')
     .withChild(
       buildElement('span')
 	.withText(name)
@@ -50,6 +57,7 @@ function buildGoal({ id, name, count, target }) {
     )
     .withChild(
       buildElement('div')
+	.withClasses(goalStyles())
 	.withText(count + '/' + target)
 	.withEventListener('click', () => incGoal(id))
 	.withEventListener('contextmenu', e => {
@@ -66,6 +74,7 @@ function buildGoals() {
   const goals = JSON.parse(localStorage.getItem('goals')) || [];
   console.log(goals);
   return buildElement('div')
+    .withClass('goals')
     .withChildren(goals.map(goal => buildGoal(goal)))
     .build();
   console.log('done');
@@ -74,19 +83,20 @@ function buildGoals() {
 function goalForm() {
   const mount = document.querySelector('#goal-form');
   const form = buildElement('form')
-    .withChildren([
-      buildTextField('text', 'name'),
-      buildTextField('number', 'target'),
-      buildSubmit()
-    ])
-    .withEventListener('submit', e => {
-      console.log('submitting');
-      const name = e.target[0].value;
-      const target = e.target[1].value;
-      console.log(name, target);
-      appendGoal(e.target[0].value, e.target[1].value);
-    })
-    .build();
+	.withClasses(['modal'])
+	.withChildren([
+	  buildTextField('text', 'name'),
+	  buildTextField('number', 'target'),
+	  buildSubmit()
+	])
+	.withEventListener('submit', e => {
+	  console.log('submitting');
+	  const name = e.target[0].value;
+	  const target = e.target[1].value;
+	  console.log(name, target);
+	  appendGoal(e.target[0].value, e.target[1].value);
+	})
+	.build();
   mount.appendChild(form);
 }
 

@@ -94,3 +94,43 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.goals {
+    display: flex;
+}
+
+.goal {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.circle {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+}
+
+.red { background-color: #f00; }
+.green { background-color: green; }
+.gold { background-color: gold; }
+
+.modal {
+  position: fixed;
+  /* z-index: 1; */
+  left: calc(50vw - 128px);
+  top: calc(50vh - 128px);
+  width: 256px;
+  height: 256px;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: solid;
+}
