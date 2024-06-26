@@ -5,34 +5,78 @@ import { buildSubmit, buildTextField } from './components.js';
 // Store Manipulation //
 //--------------------//
 
-function incGoal(id) {
-  const goals = JSON.parse(localStorage.getItem('goals')) || [];
-  const goal = goals.find(goal => goal.id == id);
-  goal.count = goal.count + 1;
-  localStorage.setItem('goals', JSON.stringify(goals));
-  renderGoals();
+// utils
+
+function get(key) {
+  return JSON.parse(localStorage.getItem(key));
 }
 
-function zeroGoal(id) {
-  const goals = JSON.parse(localStorage.getItem('goals')) || [];
-  const goal = goals.find(goal => goal.id == id);
-  goal.count = 0;
-  localStorage.setItem('goals', JSON.stringify(goals));
-  renderGoals();
+function set(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+  return value;
 }
+
+function swap(key, func) {
+  return set(key, func(get(key)));
+}
+
+// history
+
+function dayOldP(date) {
+  const now = new Date();
+  const day = 24 * 60 * 60 * 1000;
+  return now - day > day;
+}
+
+function recordDay(goals) {
+  const last_recorded = swap('last_recorded', value => {
+    if (value) return value;
+    return new Date();
+  });
+  if (dayOldP(last_recorded)) {
+    swap('history', value => [...(value || []), goals]);
+    set('last_recorded', new Date());
+  } else {
+    swap('history', value => {
+      (value || []).pop();
+      return [...(value || []), goals];
+    });
+  }
+}
+
+// goals
 
 function appendGoal(name, target) {
-  const goals = JSON.parse(localStorage.getItem('goals')) || [];
-  localStorage.setItem('goals', JSON.stringify([...goals, {
+  swap('goals', value => {
+    return [...(value || []), {
     'id': crypto.randomUUID(),
     'name': name,
     'count': 0,
     'target': target
-  }]));
+    }];
+  });
 }
 
 function clearGoals() {
-  localStorage.setItem('goals', '[]');
+  set('goals', []);
+  renderGoals();
+}
+
+function incGoal(id) {
+  const goals = get('goals') || [];
+  const goal = goals.find(goal => goal.id == id);
+  goal.count = goal.count + 1;
+  recordDay(goals);
+  set('goals', goals);
+  renderGoals();
+}
+
+function zeroGoal(id) {
+  const goals = get('goals') || [];
+  const goal = goals.find(goal => goal.id == id);
+  goal.count = 0;
+  recordDay(goals);
+  set('goals', goals);
   renderGoals();
 }
 
@@ -69,33 +113,27 @@ function buildGoal({ id, name, count, target }) {
 }
 
 function buildGoals() {
-  console.log(localStorage.getItem('goals'));
   const goals = JSON.parse(localStorage.getItem('goals')) || [];
-  console.log(goals);
   return buildElement('div')
     .withClass('goals')
     .withChildren(goals.map(goal => buildGoal(goal)))
     .build();
-  console.log('done');
 }
 
-function goalForm() {
-  const mount = document.querySelector('#goal-form');
-  const killForm = () => mount.innerHTML = "";
-  const form = buildElement('form')
-	.withClasses(['modal'])
-	.withChildren([
-	  buildTextField('text', 'name'),
-	  buildTextField('number', 'target'),
-	  buildSubmit(),
-    buildElement('button')
-      .withText('Cancel')
-      .withEventListener('click', killForm)
-      .build()
-	])
-	.withEventListener('submit', e => appendGoal(e.target[0].value, e.target[1].value))
-	.build();
-  mount.appendChild(form);
+function buildGoalForm(killForm, submitForm) {
+  return buildElement('form')
+    .withClasses(['modal'])
+    .withChildren([
+      buildTextField('text', 'name'),
+      buildTextField('number', 'target'),
+      buildSubmit(),
+      buildElement('button')
+	.withText('Cancel')
+	.withEventListener('click', killForm)
+	.build()
+    ])
+    .withEventListener('submit', submitForm)
+    .build();
 }
 
 //-----------//
@@ -109,6 +147,18 @@ function renderGoals() {
   mount.appendChild(goals);
 }
 
-document.getElementById('new-goal').onclick = goalForm;
+function renderGoalForm() {
+  const mount = document.querySelector('#goal-form');
+  const killForm = () => mount.innerHTML = "";
+  const submitForm = e => appendGoal(e.target[0].value, e.target[1].value);
+  const form = buildGoalForm(killForm, submitForm);
+  mount.appendChild(form);
+}
+
+//------------//
+// Initialize //
+//------------//
+
+document.getElementById('new-goal').onclick = renderGoalForm;
 document.getElementById('clear-goals').onclick = clearGoals;
 renderGoals();
